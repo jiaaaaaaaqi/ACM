@@ -1,0 +1,135 @@
+#include <map>
+#include <set>
+#include <list>
+#include <ctime>
+#include <cmath>
+#include <stack>
+#include <queue>
+#include <cfloat>
+#include <string>
+#include <vector>
+#include <cstdio>
+#include <bitset>
+#include <cstdlib>
+#include <cstring>
+#include <iostream>
+#include <algorithm>
+#define  lowbit(x)  x & (-x)
+#define  mes(a, b)  memset(a, b, sizeof a)
+#define  fi         first
+#define  se         second
+#define  pii        pair<int, int>
+#define  INOPEN     freopen("in.txt", "r", stdin)
+#define  OUTOPEN    freopen("out.txt", "w", stdout)
+
+typedef unsigned long long int ull;
+typedef long long int ll;
+const int    maxn = 2e5 + 10;
+const int    maxm = 1e5 + 10;
+const ll     mod  = 2012;
+const ll     INF  = 1e18 + 100;
+const int    inf  = 0x3f3f3f3f;
+const double pi   = acos(-1.0);
+const double eps  = 1e-8;
+using namespace std;
+
+int n, m;
+int cas, tol, T;
+
+struct Sam {
+	struct Node {
+		int next[20];
+		int fa, len;
+		void init() {
+			mes(next, 0);
+			fa = len = 0;
+		}
+	} node[maxn<<1];
+	int dp[maxn<<1];
+	bool vis[maxn<<1];
+	int last, sz;
+	void init() {
+		mes(dp, 0);
+		last = sz = 1;
+		node[sz].init();
+	}
+	void insert(int k) {
+		int p = last, np = last = ++sz;
+		node[np].init();
+		node[np].len = node[p].len+1;
+		for(; p&&!node[p].next[k]; p=node[p].fa)
+			node[p].next[k] = np;
+		if(p == 0) {
+			node[np].fa = 1;
+		} else {
+			int q = node[p].next[k];
+			if(node[q].len == node[p].len + 1) {
+				node[np].fa = q;
+			} else {
+				int nq = ++sz;
+				node[nq] = node[q];
+				node[nq].len = node[p].len+1;
+				node[np].fa = node[q].fa = nq;
+				for(; p&&node[p].next[k]==q; p=node[p].fa)
+					node[p].next[k] = nq;
+			}
+		}
+	}
+	void dfs(int u, int ans) {
+		if(vis[u])	return ;
+		dp[u] = (dp[u]+ans)%mod;
+		vis[u] = true;
+		for(int i=0; i<=9; i++) {
+			if(node[u].next[i+1] == 0)	continue;
+			dfs(node[u].next[i+1], (ans*10+i)%mod);
+		}
+	}
+	void handle() {
+		mes(vis, 0);
+		int p = 1;
+		for(int i=1; i<=9; i++) {
+			if(node[p].next[i+1] == 0)	continue;
+			mes(vis, 0);
+			dfs(node[p].next[i+1], i);
+		}
+	}
+	void solve() {
+		ll ans = 0;
+		for(int i=2; i<=sz; i++) {
+			ans += dp[i];
+			ans %= mod;
+//			printf("%d %d\n", i, dp[i]);
+		}
+		printf("%lld\n", ans);
+	}
+} sam;
+char s[maxn], t[maxn];
+
+int main() {
+	while(~scanf("%d", &T)) {
+		n = 0;
+		while(T--) {
+			scanf("%s", t+1);
+			int tlen = strlen(t+1);
+			for(int i=1; i<=tlen; i++) {
+				s[++n] = t[i]-'0'+1;
+			}
+			s[++n] = 11;
+		}
+		sam.init();
+		for(int i=1; i<=n; i++) {
+			sam.insert(s[i]);
+		}
+		sam.handle();
+		sam.solve();
+	}
+	return 0;
+}
+/*
+5
+101
+123
+09
+000 
+1234567890
+*/
